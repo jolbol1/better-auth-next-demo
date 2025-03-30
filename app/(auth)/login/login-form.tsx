@@ -69,7 +69,7 @@ export function LoginForm({
               </div>
               <div className="flex flex-col gap-3">
                 <Button type="submit" className="w-full" disabled={pending}>
-                  Sign up
+                  Sign in
                 </Button>
                 <Button
                   onClick={async () => {
