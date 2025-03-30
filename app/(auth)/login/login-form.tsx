@@ -11,11 +11,21 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
+import { useActionState } from "react";
+import { loginEmail } from "../actions";
+import { ActionState } from "@/lib/action-helpers";
+import { authClient } from "@/lib/auth-client";
 
 export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
+  const [state, formAction, pending] = useActionState<ActionState, FormData>(
+    loginEmail,
+    {
+      error: "",
+    }
+  );
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card>
@@ -26,7 +36,7 @@ export function LoginForm({
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form>
+          <form action={formAction}>
             <div className="flex flex-col gap-6">
               <div className="grid gap-3">
                 <Label htmlFor="email">Email</Label>
@@ -35,6 +45,7 @@ export function LoginForm({
                   name="email"
                   type="email"
                   placeholder="m@example.com"
+                  defaultValue={state.email}
                   required
                 />
               </div>
@@ -48,18 +59,36 @@ export function LoginForm({
                     Forgot your password?
                   </a>
                 </div>
-                <Input id="password" name="password" type="password" required />
+                <Input
+                  id="password"
+                  name="password"
+                  type="password"
+                  required
+                  defaultValue={state.password}
+                />
               </div>
               <div className="flex flex-col gap-3">
-                <Button type="submit" className="w-full">
+                <Button type="submit" className="w-full" disabled={pending}>
                   Sign up
                 </Button>
-                <Button variant="outline" className="w-full" type="button">
+                <Button
+                  onClick={async () => {
+                    await authClient.signIn.social({
+                      provider: "github",
+                      callbackURL: "/dashboard",
+                    });
+                  }}
+                  variant="outline"
+                  className="w-full"
+                  type="button"
+                >
                   Sign in with GitHub
                 </Button>
               </div>
             </div>
-            <div className="text-red-500 text-sm"></div>
+            {state.error && (
+              <div className="text-red-500 text-sm">{state.error}</div>
+            )}
             <div className="mt-4 text-center text-sm">
               Don&apos;t have an account?{" "}
               <Link href="/signup" className="underline underline-offset-4">

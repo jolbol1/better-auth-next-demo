@@ -11,11 +11,21 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
+import { signUpEmail } from "../actions";
+import { useActionState } from "react";
+import { ActionState } from "@/lib/action-helpers";
+import { authClient } from "@/lib/auth-client";
 
 export function SignUpForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
+  const [state, formAction, pending] = useActionState<ActionState, FormData>(
+    signUpEmail,
+    {
+      error: "",
+    }
+  );
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card>
@@ -26,7 +36,7 @@ export function SignUpForm({
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form>
+          <form action={formAction}>
             <div className="flex flex-col gap-6">
               <div className="grid gap-3">
                 <Label htmlFor="name">Name</Label>
@@ -36,6 +46,7 @@ export function SignUpForm({
                   type="text"
                   placeholder="John Doe"
                   required
+                  defaultValue={state.name}
                 />
               </div>
               <div className="grid gap-3">
@@ -46,19 +57,35 @@ export function SignUpForm({
                   type="email"
                   placeholder="m@example.com"
                   required
+                  defaultValue={state.email}
                 />
               </div>
               <div className="grid gap-3">
                 <div className="flex items-center">
                   <Label htmlFor="password">Password</Label>
                 </div>
-                <Input id="password" name="password" type="password" required />
+                <Input
+                  id="password"
+                  name="password"
+                  type="password"
+                  required
+                  defaultValue={state.password}
+                />
               </div>
               <div className="flex flex-col gap-3">
-                <Button type="submit" className="w-full">
+                <Button type="submit" className="w-full" disabled={pending}>
                   Sign up
                 </Button>
-                <Button variant="outline" className="w-full" type="button">
+                <Button
+                  onClick={async () => {
+                    await authClient.signIn.social({
+                      provider: "github",
+                    });
+                  }}
+                  variant="outline"
+                  className="w-full"
+                  type="button"
+                >
                   Sign in with GitHub
                 </Button>
               </div>

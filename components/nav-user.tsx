@@ -24,6 +24,8 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { authClient } from "@/lib/auth-client";
+import { redirect } from "next/navigation";
 
 export function NavUser({
   user,
@@ -95,7 +97,17 @@ export function NavUser({
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={async () => {
+                await authClient.signOut({
+                  fetchOptions: {
+                    onSuccess: () => {
+                      redirect("/login");
+                    },
+                  },
+                });
+              }}
+            >
               <IconLogout />
               Log out
             </DropdownMenuItem>
